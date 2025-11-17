@@ -1,95 +1,59 @@
+import boxen from "boxen";
+import chalk from "chalk";
 import path from "node:path";
 import { fileURLToPath } from "url";
 import * as fs from "node:fs/promises";
 import { createInterface } from "node:readline";
 import { exit, stdin, stdout } from "node:process";
+import { clear, log } from "node:console";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const dataPath = path.join(__dirname, "data.json");
 const allData = JSON.parse(await fs.readFile(dataPath, { encoding: "utf8" }));
-const rl = createInterface({
-  input: stdin,
-  output: stdout,
-  prompt: "TODOLIST> ",
-});
 
-const view = (utils, data) => {
-  console.log("=======================================");
+// const rl = createInterface({
+//   input: stdin,
+//   output: stdout,
+//   prompt: "$ ",
+// });
 
-  data.map((value, index) => {
-    if (index + utils.prevList <= utils.nextList) {
-      console.log(`${index + utils.prevList + 1}. ${value.data}`);
-    }
+const dataPromise = (content) => {
+  return new Promise((resolve) => {
+    resolve(content);
   });
-
-  console.log("=======================================");
-
-  console.log("\n");
-  console.log("Command: ");
-  utils.commands.map((value, index) => {
-    if (utils.prevList === 0) {
-      if (index === 0) return;
-      console.log("  ", value.cmd);
-    } else {
-      console.log("  ", value.cmd);
-    }
-  });
-
-  console.log("\n");
 };
 
-(() => {
-  let utils = {
-    list: true,
-    prevList: 0,
-    nextList: 4,
-    commands: [
-      { cmd: "prev - halaman sebelumnya" },
-      { cmd: "next - halaman selanjutnya" },
-    ],
+const commandLineInterface = async (content, obj) => {
+  const contentText = await dataPromise(content);
+  const options = {
+    borderStyle: "round",
+    borderColor: "cyan",
+    title: "To Do List",
+    titleAlignment: "center",
   };
 
-  if (utils.list) {
-    console.clear();
-    view(utils, allData);
-  }
+  const copy = Object.assign(options, obj);
 
-  rl.prompt();
+  return new Promise((resolve) => {
+    let text = "";
+    const chars = contentText.split("");
 
-  rl.on("line", (line) => {
-    switch (line.trim()) {
-      case "prev":
-        console.clear();
-
-        if (utils.prevList > 0) {
-          utils.prevList -= 5;
-          utils.nextList -= 5;
+    for (let i = 0; i < chars.length; i++) {
+      setTimeout(() => {
+        text += chars[i];
+        clear();
+        log(boxen(chalk.cyan(text), copy));
+        
+        if (i === chars.length - 1) {
+          resolve();
         }
-        if (utils.list) {
-          view(utils, allData);
-        }
-        break;
-
-      case "next":
-        console.clear();
-
-        if (utils.prevList >= 0) {
-          utils.prevList += 5;
-          utils.nextList += 5;
-        }
-        if (utils.list) {
-          view(utils, allData);
-        }
-        break;
-
-      default:
-        console.log("Tidak ada di cmd");
-        break;
+      }, 100 * i);
     }
-    rl.prompt();
-  }).on("close", () => {
-    console.log("Have a great day!");
-    exit(0);
   });
+};
+
+(async () => {
+  await commandLineInterface("Halo semuanya       ", { height: 5, width: 80, padding: 1 });
+  await commandLineInterface("Halo semuanya yow", { height: 5, width: 80, padding: 1 });
 })();
