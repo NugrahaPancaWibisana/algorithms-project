@@ -17,14 +17,7 @@ const allData = JSON.parse(await fs.readFile(dataPath, { encoding: "utf8" }));
 //   prompt: "$ ",
 // });
 
-const dataPromise = (content) => {
-  return new Promise((resolve, reject) => {
-    resolve(content);
-  });
-};
-
-const commandLineInterface = async (content, obj) => {
-  const contentText = await dataPromise(content);
+const commandLineInterface = (content, obj) => {
   const options = {
     borderStyle: "round",
     borderColor: "cyan",
@@ -36,10 +29,10 @@ const commandLineInterface = async (content, obj) => {
 
   let text = "";
 
-  for (let i = 0; i < contentText.length; i++) {
+  for (let i = 0; i < content.length; i++) {
     ((i) => {
       setTimeout(() => {
-        text += contentText.split("")[i];
+        text += content.split("")[i];
         clear();
         log(boxen(chalk.cyan(text), copy));
       }, 100 * i);
